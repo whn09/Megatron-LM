@@ -3,6 +3,8 @@
 
 export NCCL_IB_SL=1
 export CUDA_DEVICE_MAX_CONNECTIONS=1
+export WORKSPACE=/workspace
+export LOAD_NAME=llava-mcore
 MODEL_NAME="mcore-llava-mistral-7b-instruct-clip336-pretraining"
 
 # Check that the user has set an output path for model checkpoints.
@@ -24,7 +26,8 @@ if [[ -z $LOAD_NAME ]]; then
     exit 1
 fi
 
-CHECKPOINT_DIR="${WORKSPACE}/${LOAD_NAME}/checkpoints"
+# CHECKPOINT_DIR="${WORKSPACE}/${LOAD_NAME}/checkpoints"
+CHECKPOINT_DIR="${WORKSPACE}/checkpoints/${LOAD_NAME}"
 
 DATA_TRAIN="${SOURCE}/examples/multimodal/pretrain_dataset.yaml"
 
@@ -67,7 +70,7 @@ OPTIONS=" \
     --swiglu \
     --attention-dropout 0.0 \
     --hidden-dropout ${HD} \
-    --tensor-model-parallel-size 4 \
+    --tensor-model-parallel-size 1 \
     --pipeline-model-parallel-size 1 \
     --num-layers 32 \
     --hidden-size 4096 \
@@ -88,7 +91,7 @@ OPTIONS=" \
     --eval-iters 10 \
     --eval-interval 1000 \
     --tokenizer-type MultimodalTokenizer \
-    --tokenizer-model mistralai/Mistral-7B-Instruct-v0.3 \
+    --tokenizer-model /workspace/checkpoints/Mistral-7B-Instruct-v0.3 \
     --tokenizer-prompt-format mistral \
     --data-path ${DATA_TRAIN} \
     --prompt-path ${SOURCE}/examples/multimodal/manual_prompts.json \
@@ -125,4 +128,4 @@ OPTIONS=" \
 export NVTE_APPLY_QK_LAYER_SCALING=0
 export NVTE_ALLOW_NONDETERMINISTIC_ALGO=${NONDETERMINISTIC_ATTN}
 
-torchrun --nproc_per_node 8 examples/multimodal/train.py ${OPTIONS}
+torchrun --nproc_per_node 1 examples/multimodal/train.py ${OPTIONS}
