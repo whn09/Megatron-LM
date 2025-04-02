@@ -40,7 +40,7 @@ if [[ $DEBUG -eq 1 ]]; then
     EXTRA_ARGS=""
     NONDETERMINISTIC_ATTN=1
 else
-    BZ=256
+    BZ=512
     NW=2
     HD=0.1
     LI=10
@@ -80,7 +80,7 @@ OPTIONS=" \
     --max-position-embeddings 4096 \
     --ffn-hidden-size 14336 \
     --train-iters 20000 \
-    --micro-batch-size 32 \
+    --micro-batch-size 64 \
     --global-batch-size ${BZ} \
     --lr-decay-iters 20000 \
     --lr-warmup-fraction .01 \
