@@ -3,7 +3,7 @@
 
 export NCCL_IB_SL=1
 export CUDA_DEVICE_MAX_CONNECTIONS=1
-export WORKSPACE=/workspace
+export WORKSPACE=/workspace/checkpoints
 export LOAD_NAME=llava-mcore
 MODEL_NAME="mcore-llava-mistral-7b-instruct-clip336-pretraining"
 
@@ -27,7 +27,7 @@ if [[ -z $LOAD_NAME ]]; then
 fi
 
 # CHECKPOINT_DIR="${WORKSPACE}/${LOAD_NAME}/checkpoints"
-CHECKPOINT_DIR="${WORKSPACE}/checkpoints/${LOAD_NAME}"
+CHECKPOINT_DIR="${WORKSPACE}/${LOAD_NAME}"
 
 DATA_TRAIN="${SOURCE}/examples/multimodal/pretrain_dataset.yaml"
 
@@ -80,7 +80,7 @@ OPTIONS=" \
     --max-position-embeddings 4096 \
     --ffn-hidden-size 14336 \
     --train-iters 20000 \
-    --micro-batch-size 1 \
+    --micro-batch-size 32 \
     --global-batch-size ${BZ} \
     --lr-decay-iters 20000 \
     --lr-warmup-fraction .01 \
