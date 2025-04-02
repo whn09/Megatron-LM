@@ -36,29 +36,29 @@ if [[ $MODEL_TYPE == "nvlm" ]]; then
         ${OUTPUT_DIR}/iter_0000001/mp_rank_07/model_optim_rng.pt
 else
     # Mistral CLIP example TP=4.
-    # python examples/multimodal/combine_state_dicts.py \
-    #     --input \
-    #     ${MCORE_LM}/iter_0000001/mp_rank_00/model_optim_rng.pt \
-    #     ${MCORE_VISION}/iter_0000001/mp_rank_00/model_optim_rng.pt \
-    #     ${MCORE_LM}/iter_0000001/mp_rank_01/model_optim_rng.pt \
-    #     ${MCORE_VISION}/iter_0000001/mp_rank_01/model_optim_rng.pt \
-    #     ${MCORE_LM}/iter_0000001/mp_rank_02/model_optim_rng.pt \
-    #     ${MCORE_VISION}/iter_0000001/mp_rank_02/model_optim_rng.pt \
-    #     ${MCORE_LM}/iter_0000001/mp_rank_03/model_optim_rng.pt \
-    #     ${MCORE_VISION}/iter_0000001/mp_rank_03/model_optim_rng.pt \
-    #     --prefixes language_model vision_model language_model vision_model language_model vision_model language_model vision_model \
-    #     --output \
-    #     ${OUTPUT_DIR}/iter_0000001/mp_rank_00/model_optim_rng.pt \
-    #     ${OUTPUT_DIR}/iter_0000001/mp_rank_01/model_optim_rng.pt \
-    #     ${OUTPUT_DIR}/iter_0000001/mp_rank_02/model_optim_rng.pt \
-    #     ${OUTPUT_DIR}/iter_0000001/mp_rank_03/model_optim_rng.pt
     python examples/multimodal/combine_state_dicts.py \
         --input \
         ${MCORE_LM}/iter_0000001/mp_rank_00/model_optim_rng.pt \
         ${MCORE_VISION}/iter_0000001/mp_rank_00/model_optim_rng.pt \
-        --prefixes language_model vision_model \
+        ${MCORE_LM}/iter_0000001/mp_rank_01/model_optim_rng.pt \
+        ${MCORE_VISION}/iter_0000001/mp_rank_01/model_optim_rng.pt \
+        ${MCORE_LM}/iter_0000001/mp_rank_02/model_optim_rng.pt \
+        ${MCORE_VISION}/iter_0000001/mp_rank_02/model_optim_rng.pt \
+        ${MCORE_LM}/iter_0000001/mp_rank_03/model_optim_rng.pt \
+        ${MCORE_VISION}/iter_0000001/mp_rank_03/model_optim_rng.pt \
+        --prefixes language_model vision_model language_model vision_model language_model vision_model language_model vision_model \
         --output \
-        ${OUTPUT_DIR}/iter_0000001/mp_rank_00/model_optim_rng.pt
+        ${OUTPUT_DIR}/iter_0000001/mp_rank_00/model_optim_rng.pt \
+        ${OUTPUT_DIR}/iter_0000001/mp_rank_01/model_optim_rng.pt \
+        ${OUTPUT_DIR}/iter_0000001/mp_rank_02/model_optim_rng.pt \
+        ${OUTPUT_DIR}/iter_0000001/mp_rank_03/model_optim_rng.pt
+    # python examples/multimodal/combine_state_dicts.py \
+    #     --input \
+    #     ${MCORE_LM}/iter_0000001/mp_rank_00/model_optim_rng.pt \
+    #     ${MCORE_VISION}/iter_0000001/mp_rank_00/model_optim_rng.pt \
+    #     --prefixes language_model vision_model \
+    #     --output \
+    #     ${OUTPUT_DIR}/iter_0000001/mp_rank_00/model_optim_rng.pt
 fi
 
 echo 1 > ${OUTPUT_DIR}/latest_checkpointed_iteration.txt
