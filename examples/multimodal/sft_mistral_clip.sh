@@ -3,6 +3,8 @@
 
 export NCCL_IB_SL=1
 export CUDA_DEVICE_MAX_CONNECTIONS=1
+export WORKSPACE=/workspace/checkpoints
+export LOAD_NAME=llava-mcore
 MODEL_NAME="mcore-llava-mistral-7b-instruct-clip336-sft"
 
 # Check that the user has set an output path for model checkpoints.
@@ -29,7 +31,8 @@ if [[ -z $LOAD_ITER ]]; then
     exit 1
 fi
 
-CHECKPOINT_DIR="${WORKSPACE}/${LOAD_NAME}/checkpoints"
+# CHECKPOINT_DIR="${WORKSPACE}/${LOAD_NAME}/checkpoints"
+CHECKPOINT_DIR="${WORKSPACE}/${LOAD_NAME}"
 
 DATA_TRAIN="${SOURCE}/examples/multimodal/sft_dataset.yaml"
 
@@ -90,6 +93,8 @@ OPTIONS=" \
     --min-lr 1e-7 \
     --lr-decay-style cosine \
     --log-interval ${LI} \
+    --log-throughput \
+    --timing-log-level 2 \
     --eval-iters 10 \
     --eval-interval 500 \
     --tokenizer-type MultimodalTokenizer \

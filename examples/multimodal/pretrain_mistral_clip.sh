@@ -88,6 +88,8 @@ OPTIONS=" \
     --min-lr 1.0e-5 \
     --lr-decay-style cosine \
     --log-interval ${LI} \
+    --log-throughput \
+    --timing-log-level 2 \
     --eval-iters 10 \
     --eval-interval 1000 \
     --tokenizer-type MultimodalTokenizer \
