@@ -4,8 +4,7 @@ import webdataset as wds
 
 from tqdm import tqdm
 
-# llava_pretrain_dir = '/workspace/dataset/LLaVA-NeXT-Data/llava_next_raw_format'
-llava_pretrain_dir = '/home/ubuntu/dataset/LLaVA-NeXT-Data/llava_next_raw_format'
+llava_pretrain_dir = '/workspace/dataset/LLaVA-NeXT-Data/llava_next_raw_format'
 
 # Paths to the dataset files
 json_file = os.path.join(llava_pretrain_dir, 'llava_next_raw_format_processed.json')
