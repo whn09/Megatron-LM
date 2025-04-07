@@ -115,12 +115,13 @@ OPTIONS=" \
     ${EXTRA_ARGS} \
     --distributed-timeout-minutes 60 \
     --ckpt-format torch \
-    --exit-on-missing-checkpoint \
     --no-load-optim \
     --no-load-rng \
     --rotary-base 500000 \
     --use-rope-scaling
 "
+
+    # --exit-on-missing-checkpoint \
 
     # --rotary-base 1000000 \
 
