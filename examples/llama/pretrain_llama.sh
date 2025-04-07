@@ -56,6 +56,8 @@ OPTIONS=" \
     --transformer-impl transformer_engine \
     --use-te \
     --normalization RMSNorm \
+    --group-query-attention \
+    --num-query-groups 8 \
     --no-masked-softmax-fusion \
     --num-workers ${NW} \
     --exit-duration-in-mins 230 \
@@ -122,15 +124,11 @@ OPTIONS=" \
     --exit-on-missing-checkpoint \
     --no-load-optim \
     --no-load-rng \
-    --group-query-attention 8 \
     --rotary-base 500000 \
     --use-rope-scaling
 "
 
     # --rotary-base 1000000 \
-
-    # --group-query-attention \
-    # --num-query-groups 8 \
 
     # --seq-length 576 \
     # --decoder-seq-length 1024 \
