@@ -4,12 +4,12 @@ splits:
   train:
     datasets:
       - weight: 1.
-        path: /workspace/dataset/wiki/wiki_demo.txt
+        path: /workspace/dataset/c4/
         subflavors:
           augmentation: false
   val:
     datasets:
       - weight: 1.
-        path: /workspace/dataset/wiki/wiki_demo.txt
+        path: /workspace/dataset/c4/
         subflavors:
           augmentation: false

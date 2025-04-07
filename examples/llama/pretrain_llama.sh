@@ -114,7 +114,8 @@ OPTIONS=" \
     --tensorboard-dir ${TENSORBOARD_DIR} \
     ${EXTRA_ARGS} \
     --distributed-timeout-minutes 60 \
-    --ckpt-format torch
+    --ckpt-format torch \
+    --exit-on-missing-checkpoint \
     --no-load-optim \
     --no-load-rng \
     --rotary-base 500000 \

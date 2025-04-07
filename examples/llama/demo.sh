@@ -27,4 +27,11 @@ python tools/checkpoint/convert.py \
    --model-size llama3
 
 cd $WORKSPACE/megatron
+python tools/preprocess_data.py \
+   --input $WORKSPACE/dataset/c4/c4_demo.json \
+   --json-keys 'text' \
+   --output-prefix $WORKSPACE/dataset/c4/c4_demo \
+   --workers 1 \
+   --tokenizer-type HuggingFaceTokenizer \
+   --tokenizer-model $WORKSPACE/checkpoints/Meta-Llama-3.1-8B
 examples/llama/pretrain_llama.sh
