@@ -29,7 +29,7 @@ fi
 # CHECKPOINT_DIR="${WORKSPACE}/${LOAD_NAME}/checkpoints"
 CHECKPOINT_DIR="${WORKSPACE}/${LOAD_NAME}"
 
-DATA_TRAIN="${SOURCE}/examples/llama/pretrain_llama.yaml"
+DATA_TRAIN="/workspace/dataset/c4/"
 
 DEBUG=0
 if [[ $DEBUG -eq 1 ]]; then
