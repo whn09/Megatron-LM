@@ -29,7 +29,7 @@ fi
 # CHECKPOINT_DIR="${WORKSPACE}/${LOAD_NAME}/checkpoints"
 CHECKPOINT_DIR="${WORKSPACE}/${LOAD_NAME}"
 
-DATA_TRAIN="${SOURCE}/examples/multimodal/pretrain_llama.yaml"
+DATA_TRAIN="${SOURCE}/examples/llama/pretrain_llama.yaml"
 
 DEBUG=0
 if [[ $DEBUG -eq 1 ]]; then
@@ -56,8 +56,6 @@ OPTIONS=" \
     --transformer-impl transformer_engine \
     --use-te \
     --normalization RMSNorm \
-    --group-query-attention \
-    --num-query-groups 8 \
     --no-masked-softmax-fusion \
     --num-workers ${NW} \
     --exit-duration-in-mins 230 \
@@ -66,7 +64,6 @@ OPTIONS=" \
     --disable-bias-linear \
     --position-embedding-type rope \
     --rotary-percent 1.0 \
-    --rotary-base 1000000 \
     --swiglu \
     --attention-dropout 0.0 \
     --hidden-dropout ${HD} \
@@ -76,7 +73,6 @@ OPTIONS=" \
     --hidden-size 4096 \
     --num-attention-heads 32 \
     --seq-length 8192 \
-    --decoder-seq-length 1024 \
     --max-position-embeddings 131072 \
     --ffn-hidden-size 14336 \
     --train-iters 20000 \
@@ -124,30 +120,20 @@ OPTIONS=" \
     --allow-missing-vision-projection-checkpoint \
     --ckpt-format torch
     --exit-on-missing-checkpoint \
-    --use-checkpoint-args \
     --no-load-optim \
     --no-load-rng \
-    --untie-embeddings-and-output-weights \
-    --normalization RMSNorm \
-    --position-embedding-type rope \
-    --no-masked-softmax-fusion \
-    --attention-softmax-in-fp32 \
-    --disable-bias-linear \
-    --transformer-impl transformer_engine \
     --group-query-attention 8 \
-    --attention-dropout 0.0 \
-    --hidden-dropout 0.0 \
     --rotary-base 500000 \
-    --rotary-percent 1.0 \
-    --use-rope-scaling \
-    --ffn-hidden-size 14336 \
-    --num-attention-heads 32 \
-    --swiglu \
-    --bf16 \
-
+    --use-rope-scaling
 "
 
+    # --rotary-base 1000000 \
+
+    # --group-query-attention \
+    # --num-query-groups 8 \
+
     # --seq-length 576 \
+    # --decoder-seq-length 1024 \
 
     # --freeze-LM \
     # --freeze-ViT \

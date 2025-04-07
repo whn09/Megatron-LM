@@ -156,6 +156,19 @@ energon prepare ./
 # > Please enter a desired train/val/test split like "0.5, 0.2, 0.3" or "8,1,1": 9,1,0
 # > Do you want to create a dataset.yaml interactively? [Y/n]: Y
 # > Please enter a number to choose a class: 9 (VQASample)
+# The following sample types are available:
+# 0. CaptioningSample
+# 1. ImageClassificationSample
+# 2. ImageSample
+# 3. InterleavedSample
+# 4. MultiChoiceVQASample
+# 5. OCRSample
+# 6. Sample
+# 7. SimilarityInterleavedSample
+# 8. TextSample
+# 9. VQASample
+# 10. VidQASample
+# 11. Crude sample (plain dict for cooking)
 # > Do you want to set a simple field_map[Y] (or write your own sample_loader [n])? [Y/n]: Y
 # > Please enter a webdataset field name for 'image' (<class 'torch.Tensor'>): jpg
 # > Please enter a webdataset field name for 'context' (<class 'str'>): json[0][value]
