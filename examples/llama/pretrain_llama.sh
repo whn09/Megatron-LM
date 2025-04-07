@@ -4,8 +4,8 @@
 export NCCL_IB_SL=1
 export CUDA_DEVICE_MAX_CONNECTIONS=1
 export WORKSPACE=/workspace/checkpoints
-export LOAD_NAME=llava-mcore
-MODEL_NAME="mcore-llava-next-llama-8b-instruct-clip336-pretraining"
+export LOAD_NAME=llama3.1-mcore
+MODEL_NAME="mcore-llama3.1-8b-pretraining"
 
 # Check that the user has set an output path for model checkpoints.
 if [[ -z $WORKSPACE ]]; then
@@ -29,7 +29,7 @@ fi
 # CHECKPOINT_DIR="${WORKSPACE}/${LOAD_NAME}/checkpoints"
 CHECKPOINT_DIR="${WORKSPACE}/${LOAD_NAME}"
 
-DATA_TRAIN="${SOURCE}/examples/multimodal/pretrain_next_dataset.yaml"
+DATA_TRAIN="${SOURCE}/examples/multimodal/pretrain_llama.yaml"
 
 DEBUG=0
 if [[ $DEBUG -eq 1 ]]; then
@@ -70,7 +70,7 @@ OPTIONS=" \
     --swiglu \
     --attention-dropout 0.0 \
     --hidden-dropout ${HD} \
-    --tensor-model-parallel-size 4 \
+    --tensor-model-parallel-size 1 \
     --pipeline-model-parallel-size 1 \
     --num-layers 32 \
     --hidden-size 4096 \
@@ -92,8 +92,8 @@ OPTIONS=" \
     --timing-log-level 2 \
     --eval-iters 10 \
     --eval-interval 1000 \
-    --tokenizer-type MultimodalTokenizer \
-    --tokenizer-model /workspace/checkpoints/Meta-Llama-3.1-8B-Instruct \
+    --tokenizer-type HuggingFaceTokenizer \
+    --tokenizer-model /workspace/checkpoints/Meta-Llama-3.1-8B \
     --tokenizer-prompt-format llama3 \
     --data-path ${DATA_TRAIN} \
     --prompt-path ${SOURCE}/examples/multimodal/manual_prompts.json \
@@ -123,6 +123,28 @@ OPTIONS=" \
     --distributed-timeout-minutes 60 \
     --allow-missing-vision-projection-checkpoint \
     --ckpt-format torch
+    --exit-on-missing-checkpoint \
+    --use-checkpoint-args \
+    --no-load-optim \
+    --no-load-rng \
+    --untie-embeddings-and-output-weights \
+    --normalization RMSNorm \
+    --position-embedding-type rope \
+    --no-masked-softmax-fusion \
+    --attention-softmax-in-fp32 \
+    --disable-bias-linear \
+    --transformer-impl transformer_engine \
+    --group-query-attention 8 \
+    --attention-dropout 0.0 \
+    --hidden-dropout 0.0 \
+    --rotary-base 500000 \
+    --rotary-percent 1.0 \
+    --use-rope-scaling \
+    --ffn-hidden-size 14336 \
+    --num-attention-heads 32 \
+    --swiglu \
+    --bf16 \
+
 "
 
     # --seq-length 576 \

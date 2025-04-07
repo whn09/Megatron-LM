@@ -29,7 +29,8 @@ fi
 # CHECKPOINT_DIR="${WORKSPACE}/${LOAD_NAME}/checkpoints"
 CHECKPOINT_DIR="${WORKSPACE}/${LOAD_NAME}"
 
-DATA_TRAIN="${SOURCE}/examples/multimodal/pretrain_dataset.yaml"
+# DATA_TRAIN="${SOURCE}/examples/multimodal/pretrain_dataset.yaml"
+DATA_TRAIN="${SOURCE}/examples/multimodal/pretrain_next_dataset.yaml"
 
 DEBUG=0
 if [[ $DEBUG -eq 1 ]]; then

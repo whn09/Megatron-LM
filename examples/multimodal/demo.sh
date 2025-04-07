@@ -123,6 +123,11 @@ huggingface-cli download --repo-type model --resume-download openai/clip-vit-lar
 
 cd megatron
 
+export WORKSPACE=/workspace
+
+pip install megatron-energon[av_decode]
+pip install mamba-ssm
+
 CUDA_DEVICE_MAX_CONNECTIONS=1 python tools/checkpoint/convert.py \
    --bf16 \
    --model-type GPT \
