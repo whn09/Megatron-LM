@@ -77,7 +77,7 @@ OPTIONS=" \
     --num-attention-heads 32 \
     --seq-length 8192 \
     --decoder-seq-length 1024 \
-    --max-position-embeddings 4096 \
+    --max-position-embeddings 8192 \
     --ffn-hidden-size 14336 \
     --train-iters 20000 \
     --micro-batch-size 32 \

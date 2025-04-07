@@ -77,7 +77,7 @@ OPTIONS=" \
     --num-attention-heads 32 \
     --seq-length 8192 \
     --decoder-seq-length 1024 \
-    --max-position-embeddings 4096 \
+    --max-position-embeddings 8192 \
     --ffn-hidden-size 14336 \
     --train-iters 20000 \
     --micro-batch-size 64 \
@@ -94,7 +94,7 @@ OPTIONS=" \
     --eval-interval 1000 \
     --tokenizer-type MultimodalTokenizer \
     --tokenizer-model /workspace/checkpoints/Meta-Llama-3.1-8B-Instruct \
-    --tokenizer-prompt-format llama \
+    --tokenizer-prompt-format llama3 \
     --data-path ${DATA_TRAIN} \
     --prompt-path ${SOURCE}/examples/multimodal/manual_prompts.json \
     --save-interval 1000 \
@@ -117,7 +117,7 @@ OPTIONS=" \
     --img-w 336 \
     --dataloader-type external \
     --tensorboard-dir ${TENSORBOARD_DIR} \
-    --language-model-type=llama_8b \
+    --language-model-type=llama3.1_8b \
     --disable-vision-class-token \
     ${EXTRA_ARGS} \
     --distributed-timeout-minutes 60 \
