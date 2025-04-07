@@ -4,7 +4,7 @@
 export NCCL_IB_SL=1
 export CUDA_DEVICE_MAX_CONNECTIONS=1
 export WORKSPACE=/workspace/checkpoints
-export LOAD_NAME=llama3.1-mcore
+export LOAD_NAME=Meta-Llama-3.1-8B-mcore
 MODEL_NAME="mcore-llama3.1-8b-pretraining"
 
 # Check that the user has set an output path for model checkpoints.
@@ -54,7 +54,6 @@ OPTIONS=" \
     --use-checkpoint-args \
     --use-distributed-optimizer \
     --transformer-impl transformer_engine \
-    --use-te \
     --normalization RMSNorm \
     --group-query-attention \
     --num-query-groups 8 \
@@ -93,13 +92,10 @@ OPTIONS=" \
     --eval-interval 1000 \
     --tokenizer-type HuggingFaceTokenizer \
     --tokenizer-model /workspace/checkpoints/Meta-Llama-3.1-8B \
-    --tokenizer-prompt-format llama3 \
     --data-path ${DATA_TRAIN} \
-    --prompt-path ${SOURCE}/examples/multimodal/manual_prompts.json \
     --save-interval 1000 \
     --save ${FINETUNE_DIR} \
     --load ${FINETUNE_DIR} \
-    --dataloader-save ${FINETUNE_DIR}/dataloader \
     --pretrained-checkpoint ${CHECKPOINT_DIR} \
     --split 100,0,0 \
     --clip-grad 1.0 \
@@ -116,11 +112,8 @@ OPTIONS=" \
     --img-w 336 \
     --dataloader-type external \
     --tensorboard-dir ${TENSORBOARD_DIR} \
-    --language-model-type=llama3.1_8b \
-    --disable-vision-class-token \
     ${EXTRA_ARGS} \
     --distributed-timeout-minutes 60 \
-    --allow-missing-vision-projection-checkpoint \
     --ckpt-format torch
     --no-load-optim \
     --no-load-rng \
@@ -138,4 +131,4 @@ OPTIONS=" \
 export NVTE_APPLY_QK_LAYER_SCALING=0
 export NVTE_ALLOW_NONDETERMINISTIC_ALGO=${NONDETERMINISTIC_ATTN}
 
-torchrun --nproc_per_node 8 examples/multimodal/train.py ${OPTIONS}
+torchrun --nproc_per_node 8 pretrain_gpt.py ${OPTIONS}
