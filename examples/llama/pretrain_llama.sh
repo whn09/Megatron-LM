@@ -29,7 +29,7 @@ fi
 # CHECKPOINT_DIR="${WORKSPACE}/${LOAD_NAME}/checkpoints"
 CHECKPOINT_DIR="${WORKSPACE}/${LOAD_NAME}"
 
-DATA_TRAIN="/workspace/dataset/c4/"
+DATA_TRAIN="/workspace/dataset/c4/c4_demo_text_document"
 
 DEBUG=0
 if [[ $DEBUG -eq 1 ]]; then
@@ -78,7 +78,7 @@ OPTIONS=" \
     --max-position-embeddings 131072 \
     --ffn-hidden-size 14336 \
     --train-iters 20000 \
-    --micro-batch-size 64 \
+    --micro-batch-size 16 \
     --global-batch-size ${BZ} \
     --lr-decay-iters 20000 \
     --lr-warmup-fraction .01 \
