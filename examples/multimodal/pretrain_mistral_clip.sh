@@ -40,7 +40,7 @@ if [[ $DEBUG -eq 1 ]]; then
     EXTRA_ARGS=""
     NONDETERMINISTIC_ATTN=1
 else
-    BZ=512
+    BZ=256
     NW=2
     HD=0.1
     LI=10
@@ -80,7 +80,7 @@ OPTIONS=" \
     --max-position-embeddings 4096 \
     --ffn-hidden-size 14336 \
     --train-iters 20000 \
-    --micro-batch-size 64 \
+    --micro-batch-size 32 \
     --global-batch-size ${BZ} \
     --lr-decay-iters 20000 \
     --lr-warmup-fraction .01 \
@@ -112,8 +112,6 @@ OPTIONS=" \
     --log-num-zeros-in-grad \
     --bf16 \
     --eod-mask-loss \
-    --freeze-LM \
-    --freeze-ViT \
     --patch-dim 14 \
     --img-h 336 \
     --img-w 336 \
@@ -126,6 +124,9 @@ OPTIONS=" \
     --allow-missing-vision-projection-checkpoint \
     --ckpt-format torch
 "
+
+    # --freeze-LM \
+    # --freeze-ViT \
 
 export NVTE_APPLY_QK_LAYER_SCALING=0
 export NVTE_ALLOW_NONDETERMINISTIC_ALGO=${NONDETERMINISTIC_ATTN}

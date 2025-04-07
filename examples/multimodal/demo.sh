@@ -159,3 +159,11 @@ energon prepare ./
 
 
 examples/multimodal/pretrain_llama_clip.sh
+
+
+# LLaVA 665K
+huggingface-cli download --repo-type dataset --resume-download liuhaotian/LLaVA-Instruct-150K --local-dir LLaVA-Instruct-150K
+mkdir -p /home/ubuntu/dataset/LLaVA-NeXT-Data/llava_next_raw_format/textvqa
+cd /home/ubuntu/dataset/LLaVA-NeXT-Data/llava_next_raw_format/textvqa
+wget https://dl.fbaipublicfiles.com/textvqa/images/train_val_images.zip
+unzip train_val_images.zip
