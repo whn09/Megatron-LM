@@ -75,7 +75,7 @@ OPTIONS=" \
     --num-layers 32 \
     --hidden-size 4096 \
     --num-attention-heads 32 \
-    --seq-length 576 \
+    --seq-length 8192 \
     --decoder-seq-length 1024 \
     --max-position-embeddings 4096 \
     --ffn-hidden-size 14336 \
@@ -124,6 +124,7 @@ OPTIONS=" \
     --allow-missing-vision-projection-checkpoint \
     --ckpt-format torch
 "
+    # --seq-length 576 \
 
     # --freeze-LM \
     # --freeze-ViT \

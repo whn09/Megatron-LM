@@ -157,7 +157,7 @@ energon prepare ./
 # > Please enter a webdataset field name for 'answers' (typing.Optional[typing.List[str]], default: None): json[1][value]
 # > Please enter a webdataset field name for 'answer_weights' (typing.Optional[torch.Tensor], default: None):
 
-
+cd $WORKSPACE/megatron
 examples/multimodal/pretrain_llama_clip.sh
 
 

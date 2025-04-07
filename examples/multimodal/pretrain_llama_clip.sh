@@ -75,7 +75,7 @@ OPTIONS=" \
     --num-layers 32 \
     --hidden-size 4096 \
     --num-attention-heads 32 \
-    --seq-length 576 \
+    --seq-length 8192 \
     --decoder-seq-length 1024 \
     --max-position-embeddings 4096 \
     --ffn-hidden-size 14336 \
@@ -112,8 +112,6 @@ OPTIONS=" \
     --log-num-zeros-in-grad \
     --bf16 \
     --eod-mask-loss \
-    --freeze-LM \
-    --freeze-ViT \
     --patch-dim 14 \
     --img-h 336 \
     --img-w 336 \
@@ -126,6 +124,11 @@ OPTIONS=" \
     --allow-missing-vision-projection-checkpoint \
     --ckpt-format torch
 "
+
+    # --seq-length 576 \
+
+    # --freeze-LM \
+    # --freeze-ViT \
 
 export NVTE_APPLY_QK_LAYER_SCALING=0
 export NVTE_ALLOW_NONDETERMINISTIC_ALGO=${NONDETERMINISTIC_ATTN}
