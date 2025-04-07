@@ -75,6 +75,7 @@ OPTIONS=" \
     --hidden-size 4096 \
     --num-attention-heads 32 \
     --seq-length 8192 \
+    --decoder-seq-length 1024 \
     --max-position-embeddings 131072 \
     --ffn-hidden-size 14336 \
     --train-iters 20000 \
@@ -121,7 +122,6 @@ OPTIONS=" \
     --distributed-timeout-minutes 60 \
     --allow-missing-vision-projection-checkpoint \
     --ckpt-format torch
-    --exit-on-missing-checkpoint \
     --no-load-optim \
     --no-load-rng \
     --rotary-base 500000 \
@@ -131,7 +131,6 @@ OPTIONS=" \
     # --rotary-base 1000000 \
 
     # --seq-length 576 \
-    # --decoder-seq-length 1024 \
 
     # --freeze-LM \
     # --freeze-ViT \
