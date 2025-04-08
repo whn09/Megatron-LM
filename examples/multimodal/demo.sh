@@ -45,7 +45,6 @@ docker push 579019700964.dkr.ecr.us-east-1.amazonaws.com/megatron-multimodal:lat
 docker run --gpus all -it --rm --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 -v $HOME/Megatron-LM:/workspace/megatron -v $HOME/dataset:/workspace/dataset -v $HOME/checkpoints:/workspace/checkpoints megatron-multimodal:latest
 
 export WORKSPACE=/workspace
-# export WORKSPACE=/home/ubuntu
 
 cd megatron
 
