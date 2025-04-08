@@ -112,8 +112,16 @@ for file in *.tar.gz; do
     tar -xzf "$file"
 done
 
+# LLaVA 665K
+huggingface-cli download --repo-type dataset --resume-download liuhaotian/LLaVA-Instruct-150K --local-dir LLaVA-Instruct-150K
+mkdir -p $HOME/dataset/LLaVA-NeXT-Data/llava_next_raw_format/textvqa
+cd $HOME/dataset/LLaVA-NeXT-Data/llava_next_raw_format/textvqa
+wget https://dl.fbaipublicfiles.com/textvqa/images/train_val_images.zip
+unzip train_val_images.zip
+cp $HOME/dataset/LLaVA-Instruct-150K/llava_v1_5_mix665k.json $HOME/dataset/LLaVA-NeXT-Data/llava_next_raw_format/
+
 cd $HOME/checkpoints
-huggingface-cli download --repo-type model --resume-download llava-hf/llama3-llava-next-8b --local-dir llama3-llava-next-8b
+# huggingface-cli download --repo-type model --resume-download llava-hf/llama3-llava-next-8b --local-dir llama3-llava-next-8b
 # git clone https://huggingface.co/meta-llama/Meta-Llama-3.1-8B-Instruct # You may need to login
 huggingface-cli download --repo-type model --resume-download meta-llama/Meta-Llama-3.1-8B-Instruct --local-dir Meta-Llama-3.1-8B-Instruct # You may need to login
 huggingface-cli download --repo-type model --resume-download openai/clip-vit-large-patch14-336 --local-dir clip-vit-large-patch14-336
@@ -176,11 +184,3 @@ energon prepare ./
 
 cd $WORKSPACE/megatron
 examples/multimodal/pretrain_llama_clip.sh
-
-
-# LLaVA 665K
-huggingface-cli download --repo-type dataset --resume-download liuhaotian/LLaVA-Instruct-150K --local-dir LLaVA-Instruct-150K
-mkdir -p /home/ubuntu/dataset/LLaVA-NeXT-Data/llava_next_raw_format/textvqa
-cd /home/ubuntu/dataset/LLaVA-NeXT-Data/llava_next_raw_format/textvqa
-wget https://dl.fbaipublicfiles.com/textvqa/images/train_val_images.zip
-unzip train_val_images.zip
