@@ -22,6 +22,7 @@ python tools/checkpoint/convert.py \
    --loader llama_mistral \
    --saver core \
    --target-tensor-parallel-size 1 \
+   --target-pipeline-parallel-size 1 \
    --checkpoint-type hf \
    --load-dir $WORKSPACE/checkpoints/Meta-Llama-3.1-8B \
    --save-dir $WORKSPACE/checkpoints/Meta-Llama-3.1-8B-mcore \
