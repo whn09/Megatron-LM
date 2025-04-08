@@ -14,7 +14,7 @@ WORLD_SIZE=$(($GPUS_PER_NODE*$NNODES))
 
 CHECKPOINT_PATH=/workspace/checkpoints/Meta-Llama-3.1-8B-mcore
 TOKENIZER_MODEL=/workspace/checkpoints/Meta-Llama-3.1-8B
-DATA_PATH=/workspace/dataset/c4/c4_demo_text_summary
+DATA_PATH=/workspace/dataset/c4/c4_demo_text_document
 
 DISTRIBUTED_ARGS=(
     --nproc_per_node $GPUS_PER_NODE
@@ -44,7 +44,12 @@ MODEL_ARGS=(
     --num-query-groups 8
     --no-masked-softmax-fusion
     --no-position-embedding
-    --rotary-base 1000000
+    --rotary-base 500000
+    --rotary-percent 1.0
+    --use-rope-scaling
+    --use-checkpoint-args
+    --attention-softmax-in-fp32
+    --transformer-impl transformer_engine
 )
 
 DATA_ARGS=(
@@ -55,7 +60,7 @@ DATA_ARGS=(
 )
 
 TRAINING_ARGS=(
-    --micro-batch-size 8
+    --micro-batch-size 1
     --global-batch-size 256
     --lr 1e-4
     --train-iters 500000
