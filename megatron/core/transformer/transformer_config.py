@@ -6,12 +6,19 @@ from typing import Callable, List, Optional, Tuple, Union
 
 import torch
 import torch.nn.functional as F
+from packaging.version import Version as PkgVersion
 
 from megatron.core.enums import Fp8Recipe
 from megatron.core.transformer.enums import AttnBackend
 
 from ..model_parallel_config import ModelParallelConfig
-from ..utils import get_te_version, init_method_normal, is_te_min_version, scaled_init_method_normal
+from ..utils import (
+    get_te_version,
+    init_method_normal,
+    is_te_min_version,
+    is_torch_min_version,
+    scaled_init_method_normal,
+)
 
 
 @dataclass
@@ -130,7 +137,7 @@ class TransformerConfig(ModelParallelConfig):
     """Which norm to use for normalization layers, valid options are `LayerNorm` and `RMSNorm`."""
 
     qk_layernorm: bool = False
-    """Whether to apply LayerNorm to the query and key embeddings."""
+    """Whether to apply `normalization` type of normalization to the query and key embeddings."""
 
     test_mode: bool = False
     """Whether to run real-time tests."""
@@ -141,6 +148,13 @@ class TransformerConfig(ModelParallelConfig):
 
     multi_latent_attention: bool = False
     """Whether to use multi-latent attention."""
+
+    no_rope_freq: Optional[Union[int, List[int]]] = None
+    """Controls which layers perform Rotary Position Embedding (RoPE). Accepts either:
+    An integer N: Creates a pattern where RoPE is skipped every N-1 layers. For example,
+    no_rope=4 means RoPE is applied for 3 layers, then skipped for 1 layer, repeating this pattern.
+    A list of integers: Defines a custom pattern where 1 means skip RoPE and 0 means apply RoPE.
+    For example, [0,1,1,0] means: apply RoPE, skip RoPE, skip RoPE, apply RoPE."""
 
     ####################
     # initialization
@@ -178,7 +192,7 @@ class TransformerConfig(ModelParallelConfig):
     apply_query_key_layer_scaling is True."""
 
     disable_bf16_reduced_precision_matmul: bool = False
-    """If True, sets torch.backends.cuda.matmul.allow_bf16_reduced_precision_reduction=False to 
+    """If True, sets torch.backends.cuda.matmul.allow_bf16_reduced_precision_reduction=False to
     prevent matmul from using reduced precision accumulation when using BF16."""
 
     ####################
@@ -243,7 +257,7 @@ class TransformerConfig(ModelParallelConfig):
     "moe_act": recompute the MoE MLP activation function.
     "layernorm": recompute the input_layernorm and pre_mlp_layernorm.
     "mla_up_proj": recompute the MLA up projection and RoPE applying parts.
-    "mlp": recompute the dense MLP submodule. 
+    "mlp": recompute the dense MLP submodule.
     "moe": recompute the MoE layer.
     "moe_act", "layernorm", and "mla_up_proj" use output-discarding checkpointing,
     "core_attn", "mlp", and "moe" uses normal checkpointing.
@@ -260,7 +274,8 @@ class TransformerConfig(ModelParallelConfig):
     fp8_recipe: Optional[str] = "delayed"
     """If set, enables the use of FP8 precision through Transformer Engine. There are 3 predefined
     choices (1) 'tensorwise' uses per tensor current scaling recipe, (2) 'delayed'
-    uses delayed scaling recipe, 3) 'mxfp8' for Blackwell architecture only"""
+    uses delayed scaling recipe, 3) 'mxfp8' for Blackwell architecture only,
+    4) 'blockwise' for blockwise scaling recipe."""
 
     fp8_param: bool = False
     """If set, keep the parameters in fp8 precision to save memory. This option must be used
@@ -367,7 +382,8 @@ class TransformerConfig(ModelParallelConfig):
     """Number of selected groups for group-limited routing."""
 
     moe_router_pre_softmax: bool = False
-    """Enable pre-softmax routing for MoE, which means softmax is before the top-k selection.
+    """Enable pre-softmax(pre-sigmoid) routing for MoE, which means softmax is before the 
+    top-k selection.
     By default, softmax is done after top-k."""
 
     moe_router_topk_scaling_factor: Optional[float] = None
@@ -448,6 +464,9 @@ class TransformerConfig(ModelParallelConfig):
     moe_permute_fusion: bool = False
     """Fuse token rearrangement ops during token dispatching."""
 
+    moe_apply_probs_on_input: bool = False
+    """Apply probs on input of experts instead of applying after activation and glu."""
+
     ##################
     # Context Parallel
     ##################
@@ -518,12 +537,12 @@ class TransformerConfig(ModelParallelConfig):
     inference_rng_tracker: bool = False
     """ Whether we should instantiate a separate RNG tracker for inference. """
 
-    mrope_section: Optional[List[int]] = None
-    """ Multimodal rope section is for channel dimension of temporal, height and width 
-    in rope calculation. """
+    symmetric_ar_type: Optional[str] = None
+    """Type of symmetric all reduce to use"""
 
-    use_custom_fsdp: bool = False
-    """ Whether to use custom fsdp for training. """
+    mrope_section: Optional[List[int]] = None
+    """ Multimodal rope section is for channel dimension of temporal, height and width
+    in rope calculation. """
 
     is_hybrid_model: bool = False
     """ Indicates whether this is a hybrid model. """
@@ -536,6 +555,20 @@ class TransformerConfig(ModelParallelConfig):
 
     mamba_num_groups: int = 8
     """The number of groups used in Mamba layers."""
+
+    mamba_num_heads: Optional[int] = None
+    """The number of heads used in Mamba layers. 
+    If None, the number of heads will be hidden_size * expand // mamba_head_dim."""
+
+    use_mamba_mem_eff_path: bool = True
+    """If True, use the memory efficient path for Mamba layers."""
+
+    mlp_chunks_for_prefill: int = 1
+    """The number of chunks along the sequence dimension to use for MLP computation
+    during prefill."""
+
+    heterogeneous_block_specs: bool = False
+    """Whether to use heterogeneous block specs (nemotron-nas architecture)."""
 
     def __post_init__(self):
         """Python dataclass method that is used to modify attributes after initialization.
@@ -619,8 +652,14 @@ class TransformerConfig(ModelParallelConfig):
         if self.num_moe_experts is not None and self.num_moe_experts <= 0:
             raise ValueError('num_moe_experts must be non-negative.')
 
-        if self.moe_ffn_hidden_size is None:
+        if self.num_moe_experts is not None and self.moe_ffn_hidden_size is None:
             self.moe_ffn_hidden_size = self.ffn_hidden_size
+            warnings.warn("moe_ffn_hidden_size is not set, using ffn_hidden_size instead.")
+
+        if self.num_moe_experts is None:
+            assert (
+                self.moe_ffn_hidden_size is None
+            ), "moe_ffn_hidden_size must be None when num_experts is not set."
 
         if self.moe_enable_deepep:
             if self.moe_token_dispatcher_type != "flex":
@@ -746,6 +785,10 @@ class TransformerConfig(ModelParallelConfig):
                     "For fused attention, you have no need to set 'core_attn' to recompute. "
                     "Please check that the core_attn recompute is really needed."
                 )
+
+            if self.fp8:
+                if "moe_act" in self.recompute_modules or "layernorm" in self.recompute_modules:
+                    raise ValueError("moe_act and layernorm recompute cannot work with fp8.")
 
         if self.moe_layer_recompute:
             warnings.warn(
@@ -906,7 +949,11 @@ class TransformerConfig(ModelParallelConfig):
 
         if self.apply_rope_fusion:
             if self.rotary_interleaved:
-                raise ValueError("rotary_interleaved does not work with apply_rope_fusion.")
+                if not is_te_min_version("2.3.0.dev0"):
+                    raise ValueError(
+                        "rotary_interleaved does not work with apply_rope_fusion for "
+                        "TE < 2.3.0.dev0. Please install TE >= 2.3.0.dev0"
+                    )
 
             from megatron.core.models.common.embeddings.rope_utils import (
                 fused_apply_rotary_pos_emb,
@@ -934,13 +981,16 @@ class TransformerConfig(ModelParallelConfig):
                 multiplier=2.0 if not self.is_hybrid_model else 1.0,
             )
 
-        if (
-            self.moe_token_dispatcher_type == "alltoall_seq"
-            and self.tensor_model_parallel_size != self.expert_tensor_parallel_size
-        ):
-            raise ValueError(
-                "alltoall_seq dispatcher not support different TP size for MoE and Dense layer."
-            )
+        if self.num_moe_experts is not None:
+            assert not self.add_bias_linear, "Bias is not supported for MoE"
+
+        if self.moe_token_dispatcher_type == "alltoall_seq":
+            if self.tensor_model_parallel_size != self.expert_tensor_parallel_size:
+                raise ValueError(
+                    "alltoall_seq dispatcher not support different TP size for MoE and Dense layer."
+                )
+            if self.moe_permute_fusion:
+                raise ValueError("alltoall_seq dispatcher does not support permute fusion.")
 
         if self.moe_router_enable_expert_bias and self.moe_router_score_function != "sigmoid":
             raise ValueError(
@@ -1015,13 +1065,17 @@ class TransformerConfig(ModelParallelConfig):
         if self.moe_permute_fusion:
             from megatron.core.transformer.moe.moe_utils import (
                 fused_permute,
+                fused_permute_with_probs,
                 fused_sort_chunks_by_index,
+                fused_sort_chunks_by_index_with_probs,
                 fused_unpermute,
             )
 
             if (
                 fused_permute is None
+                or fused_permute_with_probs is None
                 or fused_sort_chunks_by_index is None
+                or fused_sort_chunks_by_index_with_probs is None
                 or fused_unpermute is None
             ):
                 raise ValueError("fused permutation is not available. Please install TE >= 2.1.0.")
@@ -1051,6 +1105,28 @@ class TransformerConfig(ModelParallelConfig):
                 "Using a large number of experts (e.g. >=32) without fp32 routing. "
                 "Consider enabling moe_router_dtype for better numerical stability."
             )
+        if self.symmetric_ar_type is not None:
+            assert is_torch_min_version("2.7.0a0"), "Must have at least torch version 2.7 or higher"
+            assert is_te_min_version("2.3.0") or get_te_version() == PkgVersion(
+                "2.3.0.dev0+39c0e70"
+            ), "Must have at least TE version 2.3 or higher to use symmetric memory all reduce"
+
+        if self.no_rope_freq:
+            assert not self.flash_decode, 'flash_decode cannot be used with no_rope.'
+            if isinstance(self.no_rope_freq, int):
+                assert self.num_layers % self.no_rope_freq == 0, (
+                    f"no_rope_freq={self.no_rope_freq} should be "
+                    f"divisible by num_layers={self.num_layers}."
+                )
+                # Convert integer pattern to list pattern
+                # e.g. no_rope=4 with num_layers=8 becomes [0,0,0,1,0,0,0,1]
+                pattern = [0] * (self.no_rope_freq - 1) + [1]
+                self.no_rope_freq = pattern * (self.num_layers // self.no_rope_freq)
+            else:
+                assert len(self.no_rope_freq) == self.num_layers, (
+                    f"Length of no_rope list ({len(self.no_rope_freq)}) must match "
+                    f"the number of layers ({self.num_layers})"
+                )
 
 
 @dataclass

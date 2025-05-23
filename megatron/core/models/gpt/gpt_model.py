@@ -92,6 +92,7 @@ class GPTModel(LanguageModule):
         scatter_embedding_sequence_parallel: bool = True,
         seq_len_interpolation_factor: Optional[float] = None,
         mtp_block_spec: Optional[ModuleSpec] = None,
+        vp_stage: Optional[int] = None,
     ) -> None:
         super().__init__(config=config)
 
@@ -106,6 +107,7 @@ class GPTModel(LanguageModule):
         self.fp16_lm_cross_entropy = fp16_lm_cross_entropy
         self.parallel_output = parallel_output
         self.share_embeddings_and_output_weights = share_embeddings_and_output_weights
+        self.vp_stage = vp_stage
 
         if hasattr(self.config, 'position_embedding_type'):
             self.position_embedding_type = self.config.position_embedding_type
@@ -171,6 +173,7 @@ class GPTModel(LanguageModule):
             spec=transformer_layer_spec,
             pre_process=self.pre_process,
             post_process=self.post_process,
+            vp_stage=vp_stage,
         )
 
         if self.mtp_process:

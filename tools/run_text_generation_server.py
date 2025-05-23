@@ -30,6 +30,7 @@ from megatron.training import get_model
 from megatron.core.models.gpt.gpt_layer_specs import get_gpt_layer_local_spec, get_gpt_layer_with_transformer_engine_spec
 from megatron.core.transformer.module import MegatronModule
 from megatron.core.transformer.spec_utils import import_module
+from megatron.inference.text_generation import beam_search_and_post_process
 from megatron.inference.text_generation.mcore_engine_server import (
     ModelInferenceWrapperServer,
     run_mcore_engine,
@@ -140,6 +141,7 @@ def get_inference_engine(args: Namespace, model: MegatronModule) -> AbstractEngi
         padded_vocab_size=args.padded_vocab_size,
         inference_max_seq_length=args.inference_max_seq_length,
         inference_max_requests=args.inference_max_batch_size,
+        nccl_all_reduce_for_prefill=args.nccl_all_reduce_for_prefill
     )
 
     inference_wrapped_model = ModelInferenceWrapperServer(model, inference_wrapper_config)
@@ -233,5 +235,10 @@ if __name__ == "__main__":
         if choice.item() == 0:
             try:
                 run_mcore_engine(inference_engine)
+            except ValueError as ve:
+                pass
+        elif choice.item() == 1:
+            try:
+                beam_search_and_post_process(inference_engine.text_generation_controller.inference_wrapped_model.model)
             except ValueError as ve:
                 pass

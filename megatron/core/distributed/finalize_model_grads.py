@@ -147,6 +147,9 @@ def _allreduce_word_embedding_grads(model: List[torch.nn.Module], config: Transf
             grad_attr = _get_main_grad_attr(weight, ddp_config.use_custom_fsdp)
             orig_grad = getattr(weight, grad_attr)
             grad = _unshard_if_dtensor(orig_grad)
+            # When the embedding is frozen, the grad is None.
+            if grad is None:
+                return
             torch.distributed.all_reduce(grad, group=parallel_state.get_embedding_group())
             setattr(weight, grad_attr, _reshard_if_dtensor(grad, orig_grad))
 
@@ -199,6 +202,7 @@ def _allreduce_layernorm_grads(model: List[torch.nn.Module], config: Transformer
         params = []
         grads = []
         for model_chunk in model:
+            ddp_config = model_chunk.ddp_config
             for name, param in get_attr_wrapped_model(model_chunk, 'named_parameters')():
                 if param.requires_grad and (
                     getattr(param, 'sequence_parallel', False)
@@ -206,7 +210,7 @@ def _allreduce_layernorm_grads(model: List[torch.nn.Module], config: Transformer
                     or 'k_layernorm' in name
                 ):
                     params.append(param)
-                    grad_attr = _get_main_grad_attr(param, config.use_custom_fsdp)
+                    grad_attr = _get_main_grad_attr(param, ddp_config.use_custom_fsdp)
                     grad = getattr(param, grad_attr)
                     grad = _unshard_if_dtensor(grad)
                     grads.append(grad.data)
@@ -219,7 +223,7 @@ def _allreduce_layernorm_grads(model: List[torch.nn.Module], config: Transformer
                 params, grads, _unflatten_dense_tensors(coalesced, grads)
             ):
                 buf.copy_(synced)
-                grad_attr = _get_main_grad_attr(param, config.use_custom_fsdp)
+                grad_attr = _get_main_grad_attr(param, ddp_config.use_custom_fsdp)
                 orig_grad = getattr(param, grad_attr)
                 setattr(param, grad_attr, _reshard_if_dtensor(buf, orig_grad))
 
@@ -323,7 +327,9 @@ def finalize_model_grads(model: List[torch.nn.Module], num_tokens: Optional[torc
         assert all(x.item() == num_tokens_list[0] for x in num_tokens_list)
 
         # all-reduce across DP ranks.
-        torch.distributed.all_reduce(num_tokens, group=parallel_state.get_data_parallel_group())
+        torch.distributed.all_reduce(
+            num_tokens, group=parallel_state.get_data_parallel_group(with_context_parallel=True)
+        )
         for model_chunk in model:
             if num_tokens > 0:
                 scaling = 1.0 / num_tokens
